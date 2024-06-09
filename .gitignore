@@ -1,0 +1,8 @@
+
+/# Ambientes de desenvolvimento
+.env
+/node_modules
+/data
+/docker-compose.yml
+/package-lock.json
+
