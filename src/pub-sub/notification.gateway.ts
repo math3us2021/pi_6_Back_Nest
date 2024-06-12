@@ -17,7 +17,6 @@ export class NotificationGateway
 
   handleConnection(client: Socket) {
     console.log(`Client connected: ${client.id}`);
-    //client.emit('message', 'Welcome to the WebSocket server!');
   }
 
   handleDisconnect(client: Socket) {

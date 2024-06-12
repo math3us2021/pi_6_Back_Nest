@@ -8,11 +8,20 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SugestionService = void 0;
 const common_1 = require("@nestjs/common");
 const axios_1 = require("@nestjs/axios");
-const operators_1 = require("rxjs/operators");
+const rxjs_1 = require("rxjs");
 let SugestionService = class SugestionService {
     constructor(httpService) {
         this.httpService = httpService;
@@ -21,30 +30,24 @@ let SugestionService = class SugestionService {
         this.movieSugestion = [];
     }
     sugestionMoviIA(id) {
-        return this.httpService.post('http://127.0.0.1:5000/predict', { id })
-            .pipe((0, operators_1.map)((response) => {
-            response.data.recommended_ids.forEach((element) => {
-                this.getIdMovieTMDB(element).subscribe((data) => {
-                    this.movieSugestion.push(data);
-                });
-            });
-            return this.movieSugestion;
-        }));
-    }
-    getIdMovieTMDB(id) {
-        const url = `${this.baseUrl}/${id}?api_key=${this.apiKey}&language=pt-BR`;
-        return this.httpService.get(url).pipe((0, operators_1.map)((response) => {
-            return response.data;
-        }), (0, operators_1.catchError)((error) => {
-            if (error.response && error.response.status === 404) {
-                // console.error(`Filme com ID ${id} não encontrado.`);
-                return [];
-                // return throwError(() => new Error(`Filme com ID ${id} não encontrado.`));
-            }
-            return [];
-            //     return throwError(() => new Error('Ocorreu um erro inesperado.'));
-            // }
-        }));
+        return __awaiter(this, void 0, void 0, function* () {
+            this.movieSugestion = [];
+            const response = yield (0, rxjs_1.firstValueFrom)(this.httpService.post('http://20.83.150.110:5000/predict', { id }));
+            console.log(response.data.recommended_ids);
+            const moviePromises = response.data.recommended_ids.map((element) => __awaiter(this, void 0, void 0, function* () {
+                try {
+                    const data = yield (0, rxjs_1.firstValueFrom)(this.httpService.get(`${this.baseUrl}/${element}?api_key=${this.apiKey}&language=pt-BR}`));
+                    console.log(data.data.title);
+                    return data.data;
+                }
+                catch (error) {
+                    console.error(`Erro ao obter filme ${element}: ${error.message}`);
+                    return null;
+                }
+            }));
+            const movies = yield Promise.all(moviePromises);
+            return movies.filter(movie => movie !== null);
+        });
     }
 };
 exports.SugestionService = SugestionService;

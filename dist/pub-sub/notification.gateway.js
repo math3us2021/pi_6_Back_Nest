@@ -18,7 +18,6 @@ const socket_io_1 = require("socket.io");
 let NotificationGateway = class NotificationGateway {
     handleConnection(client) {
         console.log(`Client connected: ${client.id}`);
-        //client.emit('message', 'Welcome to the WebSocket server!');
     }
     handleDisconnect(client) {
         console.log(`Client disconnected: ${client.id}`);
